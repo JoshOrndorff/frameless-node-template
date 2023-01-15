@@ -51,14 +51,14 @@ Recall that the flow of a block-author node is:
 ```sh
 initialize_block(empty_header: Header);
 apply_extrinsic(ext: _);
+// any changes made in this are not persisted in state.
 finalize_block() -> Header;
 ```
 
 and the block importer calls:
 
 ```sh
-initialize_block(actual_header: Header);
-execute_block();
+execute_block(actual_block: Block);
 ```
 
 #### 2. Basic write

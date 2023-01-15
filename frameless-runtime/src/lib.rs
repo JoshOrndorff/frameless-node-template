@@ -145,7 +145,7 @@ impl sp_runtime::traits::GetRuntimeBlockType for Runtime {
 const LOG_TARGET: &'static str = "frameless";
 const BLOCK_TIME: u64 = 3000;
 
-pub const HEADER_KEY: &[u8] = b"header"; // 686561646572
+const HEADER_KEY: &[u8] = b"header"; // 686561646572
 
 // just FYI:
 // :code => 3a636f6465
@@ -207,7 +207,8 @@ impl Runtime {
 
 		let raw_state_root = &sp_io::storage::root(VERSION.state_version())[..];
 		header.state_root = sp_core::H256::decode(&mut &raw_state_root[..]).unwrap();
-		// header.extrinsics_root = ???;
+
+		// header.extrinsics_root = ??;
 
 		info!(target: LOG_TARGET, "finalizing block {:?}", header);
 		header
