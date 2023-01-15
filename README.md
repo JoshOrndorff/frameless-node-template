@@ -20,7 +20,7 @@ block is setting the right extrinsic root. If you want a bit more, try syncing y
 a new node, like:
 
 ```
-
+TODO.
 ```
 
 The second node should fail to sync until you fix this. Why is that? because the given
@@ -48,7 +48,7 @@ storage under a hardcoded key.
 
 Something along the lines of
 
-```
+```rust
 pub enum Call {
 	Set(u32),
 }
@@ -74,6 +74,7 @@ Yes, it failed because of:
 pub mod opaque {
 	type OpaqueExtrinsic = BasicExtrinsic;
 	pub type Block = generic::Block<Header, OpaqueExtrinsic>;
+}
 ```
 
 This module is used in your client to understand what an "opaque" (untyped) extrinsic is, and you
@@ -107,7 +108,7 @@ why and how the `Encode/Decode` implementation for this type is different.
 
 Next, write an inherent for your runtime that puts the timestamp into the block. For this, you need a new call type like
 
-```
+```rust
 pub enum Call {
 	Set(u32),
 	SetTimestamp(u64),
