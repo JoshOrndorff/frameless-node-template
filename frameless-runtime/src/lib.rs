@@ -116,7 +116,6 @@ pub enum Call {
 // this extrinsic type does nothing other than fulfill the compiler.
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize, parity_util_mem::MallocSizeOf))]
 #[derive(Debug, Encode, Decode, PartialEq, Eq, Clone)]
-// #[derive(Encode, Decode)]
 pub struct BasicExtrinsic(Call);
 
 #[cfg(test)]
@@ -207,9 +206,8 @@ impl Runtime {
 		sp_io::storage::clear(&HEADER_KEY);
 
 		let raw_state_root = &sp_io::storage::root(VERSION.state_version())[..];
-
-		// header.extrinsics_root = ???;
 		header.state_root = sp_core::H256::decode(&mut &raw_state_root[..]).unwrap();
+		// header.extrinsics_root = ???;
 
 		info!(target: LOG_TARGET, "finalizing block {:?}", header);
 		header
