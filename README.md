@@ -4,11 +4,16 @@ Welcome to the FRAME-LESS Runtime!
 
 A stripped down version of the [node template](https://github.com/substrate-developer-hub/substrate-node-template), ready for hackin'.
 
+[ToC]
+
 ## Instructions
 
-Here are the list of things you have to do:
+This assignment has multiple parts. The ungraded part will be in the class and the TAs will help you
+with it.
 
-### 1: Get Those Roots In Order!
+### Ungraded
+
+#### 1: Get Those Roots In Order!
 
 The template already does most of the work to make sure your heads contain the right state root and
 extrinsic root. As your first step, make sure this is the case! Both of these should be set in
@@ -41,7 +46,7 @@ initialize_block(actual_header: Header);
 execute_block();
 ```
 
-### 2. Basic write
+#### 2. Basic write
 
 Alter your `BasicExtrinsic` to accept a very basic call type where you write a given value into the
 storage under a hardcoded key.
@@ -54,7 +59,7 @@ pub enum Call {
 }
 ```
 
-### 2. Make it Upgradable!
+#### 2. Make it Upgradable!
 
 Next, make your chain upgradable. This should in itself be really easy, it is almost like the
 previous set.
@@ -66,7 +71,7 @@ Whilst doing the upgrade, make sure to:
 
 Now, try and submit a new transaction...
 
-### 3. Opaque Transactions
+#### 3. Opaque Transactions
 
 Yes, it failed because of:
 
@@ -90,7 +95,7 @@ type OpaqueExtrinsic = sp_runtime::OpaqueExtrinsic;
 
 Replay the above scenario. Will it work?
 
-### 4. Opaque Decoding
+#### 4. Opaque Decoding
 
 Well, still no. The reason for that is that now your client will think of an extrinsic as `Vec<u8>`,
 and the Runtime thinks of it as `BasicExtrinsic`. How are you going to link the two? Which bytes
@@ -104,7 +109,7 @@ substrate-based chains: `UncheckedExtrinsic`:
 https://paritytech.github.io/substrate/master/sp_runtime/generic/struct.UncheckedExtrinsic.html. See
 why and how the `Encode/Decode` implementation for this type is different.
 
-### 5. Timestamp
+#### 5. Timestamp
 
 Next, write an inherent for your runtime that puts the timestamp into the block. For this, you need a new call type like
 
@@ -120,7 +125,7 @@ The client will ask the runtime to create any given inherent at `fn inherent_ext
 to do any kind of soft-verification at `fn check_inherent`. In both cases, the substrate client will
 put its currently known timestamp at `sp_inherent::INHERENT_IDENTIFIER` key of `data`.
 
-### 6. Optional: Get Block Author
+#### 6. Optional: Get Block Author
 
 TODO
 
@@ -128,6 +133,10 @@ TODO
 TODO: update finalize_block signature in the other lecture.
 TODO: idea: extract block_author from digest?.
 
+
+### Graded
+
+TODO
 
 ## Build
 
