@@ -2,7 +2,24 @@
 
 Welcome to the FRAME-LESS Runtime!
 
-A stripped down version of the [node template](https://github.com/substrate-developer-hub/substrate-node-template), ready for hackin'.
+A stripped down version of the [node
+template](https://github.com/substrate-developer-hub/substrate-node-template), ready for hackin'.
+
+- [Substrate Frameless Node Template](#substrate-frameless-node-template)
+  - [Instructions](#instructions)
+    - [Ungraded](#ungraded)
+      - [1: Get Those Roots In Order!](#1-get-those-roots-in-order)
+      - [2. Basic write](#2-basic-write)
+      - [2. Make it Upgradable!](#2-make-it-upgradable)
+      - [3. Opaque Transactions](#3-opaque-transactions)
+      - [4. Opaque Decoding](#4-opaque-decoding)
+      - [5. Timestamp](#5-timestamp)
+      - [6. Optional: Get Block Author](#6-optional-get-block-author)
+    - [Graded](#graded)
+  - [Build](#build)
+    - [Embedded CLI Docs](#embedded-cli-docs)
+    - [Single-Node Development Chain](#single-node-development-chain)
+
 
 ## Instructions
 
