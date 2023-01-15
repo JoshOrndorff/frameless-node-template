@@ -4,8 +4,6 @@ Welcome to the FRAME-LESS Runtime!
 
 A stripped down version of the [node template](https://github.com/substrate-developer-hub/substrate-node-template), ready for hackin'.
 
-[ToC]
-
 ## Instructions
 
 This assignment has multiple parts. The ungraded part will be in the class and the TAs will help you
