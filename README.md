@@ -16,9 +16,15 @@ template](https://github.com/substrate-developer-hub/substrate-node-template), r
       - [5. Timestamp](#5-timestamp)
       - [6. Optional: Get Block Author](#6-optional-get-block-author)
     - [Graded](#graded)
-  - [Build](#build)
-    - [Embedded CLI Docs](#embedded-cli-docs)
-    - [Single-Node Development Chain](#single-node-development-chain)
+      - [Primary Task: The Runtime](#primary-task-the-runtime)
+      - [Option 1: UTXO-based Cryptocurrency](#option-1-utxo-based-cryptocurrency)
+      - [Option 2: Account-based Cryptocurrency](#option-2-account-based-cryptocurrency)
+      - [Secondary Task: User Interface](#secondary-task-user-interface)
+      - [Tertiary Task: Consensus](#tertiary-task-consensus)
+  - [How To Build and Run](#how-to-build-and-run)
+    - [Running](#running)
+    - [Multiple-nodes](#multiple-nodes)
+
 
 
 ## Instructions
@@ -36,12 +42,9 @@ extrinsic root. As your first step, make sure this is the case! Both of these sh
 
 The easy way to check that your extrinsic root check is working is running your node without
 `--release`. This will enable a `debug_assert!` on the client side that will ensure your authored
-block is setting the right extrinsic root. If you want a bit more, try syncing your blockchain with
-a new node, like:
+block is setting the right extrinsic root.
 
-```
-TODO.
-```
+> Also, until you fix this, a second node, [as explained below](#multiple-nodes) will not be able to sync your node.
 
 The second node should fail to sync until you fix this. Why is that? because the given
 implementation only checks the extrinsic root at the end of `execute_block`.
@@ -140,36 +143,81 @@ The client will ask the runtime to create any given inherent at `fn inherent_ext
 to do any kind of soft-verification at `fn check_inherent`. In both cases, the substrate client will
 put its currently known timestamp at `sp_inherent::INHERENT_IDENTIFIER` key of `data`.
 
+> Look into `pallet-timestamp` for inspiration.
+
 #### 6. Optional: Get Block Author
 
-TODO
+Inside of the block header, there is a field called `Digest`. This contains some information that is
+passed from the client, to the runtime, as part of the header. Part of this information is about
+which authoring "engine" is being used, and which validator is authoring blocks. Extract this
+information, and stored it onchain, such that one can query a storage item from your chain state and
+know who authored a given block.
 
-
-TODO: update finalize_block signature in the other lecture.
-TODO: idea: extract block_author from digest?.
+> Look into `pallet-authorship` for inspiration.
 
 
 ### Graded
 
-TODO
+This assignment covers the material from Module 3: Blockchain Fundamentals and Module 4: Substrate.
+In it, you will build a cryptocurrency Substrate runtime, a simple user interface, and gently touch
+Substrate's consensus layer.
 
-## Build
+Your project should include a README (roughly 200 - 2000 words) explaining how to use the project
+and what parts of code you want the grader to look at.
 
-The `cargo run` command will perform an initial build. Use the following command to build the node without launching it:
+#### Primary Task: The Runtime
 
-```sh
-cargo b -r
-```
+Choose one of these two options to complete. You do not need to do both.
 
-### Embedded CLI Docs
+#### Option 1: UTXO-based Cryptocurrency
 
-Once the project has been built, the following command can be used to explore all parameters and subcommands:
+- Do not use frame (Obviously because we haven't talked about it yet)
+- No account model
+- Runtime logic is similar to Bitcoin, Litecoin, Monero (not the privacy part)
+- Users are able to spend and receive UTXOs
+- Block reward is paid as a new UTXO
+- Fees are implied by the difference between the consumed and produced UTXOs
+
+#### Option 2: Account-based Cryptocurrency
+
+- Do not use frame (Obviously because we haven't talked about it yet)
+- Must use account model
+- Runtime logic is similar to Ethereum's Eth token (not including the EVM)
+- Users are able to send and receive tokens
+- Block reward is paid to the author's account
+- Fees are specified explicitly by the user
+
+#### Secondary Task: User Interface
+
+Build a user-interface for the blockchain you built above. Your user interface should allow users to
+read all relevant chain state and submit signed transactions. To achieve this you will need to make
+use of Substrate's RPC methods.
+
+This user interface does not need to be a beautiful webapp, although that is certainly welcome. A
+simple CLI based UI is enough.
+
+#### Tertiary Task: Consensus
+
+Make your blockchain use a hybrid Proof of Work / Proof of Authority consensus scheme. Use Proof of
+Work for block authoring. You may look at the code for the academy-pow chain that we ran in module
+three for inspiration. Make it use Proof of Authority Grandpa for deterministic finality. You may
+look at the Substrate node template for inspiration.
+
+
+## How To Build and Run
+
+`cargo b` and `cargo r` (short for `run` and `build`) are your default ways to build and run the
+project. In almost all cases, you should run your node with `--release` to get a reasonable
+performance. If you only build, the binary can be found in `./target/{debug|release}/node-template`.
+
+Once the project has been built, the following command can be used to explore all parameters and
+subcommands:
 
 ```sh
 ./target/release/node-template -h
 ```
 
-### Single-Node Development Chain
+### Running
 
 This command will start the single-node development chain with non-persistent state:
 
@@ -179,10 +227,12 @@ This command will start the single-node development chain with non-persistent st
 
 `--dev` will imply multiple things:
 
-1. Set `--alice` as your local node authority, which means your node will author blocks (Alice is the block author of the `dev` chain by default).
+1. Set `--alice` as your local node authority, which means your node will author blocks (Alice is
+   the block author of the `dev` chain by default).
 2. Set `--tmp`, which means every time your chain would start from scratch.
 
-If you don't include `--tmp`, your chain will start accumulating its database. Purge the development chain's state:
+If you don't include `--tmp`, your chain will start accumulating its database. For this exercise,
+you probably want to stick to `--tmp`. In case you don't you can purge the development chain's state:
 
 ```bash
 ./target/release/node-template purge-chain --dev
@@ -190,16 +240,25 @@ If you don't include `--tmp`, your chain will start accumulating its database. P
 
 Start the development chain with detailed logging:
 
+In order to have all of the runtime logs enabled, run the project with `RUST_LOG=frameless=trace`.
+
 ```bash
-RUST_BACKTRACE=1 ./target/release/node-template -ldebug --dev
+RUST_LOG=frameless=trace ./target/release/node-template --dev
 ```
 
-In case of being customizing the location of the database:
+Or
 
 ```bash
-// Create a folder to use as the db base path
-$ mkdir my-chain-state
+./target/release/node-template --dev -lframeless=trace
+```
 
-// Use of that folder to store the chain state
-$ ./target/release/node-template --dev --base-path ./my-chain-state/
+### Multiple-nodes
+
+In order to run multiple nodes, you can try either of:
+
+```
+# runs a chain with --chain=dev --alice --tmp
+$ ./target/release/node-template --dev
+# runs a chain with --chain=dev --bob --tmp
+$ ./target/release/node-template --dev --bob
 ```
