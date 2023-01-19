@@ -6,24 +6,25 @@ A stripped down version of the [node
 template](https://github.com/substrate-developer-hub/substrate-node-template), ready for hackin'.
 
 - [Substrate Frameless Node Template](#substrate-frameless-node-template)
-  - [Instructions](#instructions)
-    - [Ungraded](#ungraded)
-      - [1: Get Those Roots In Order!](#1-get-those-roots-in-order)
-      - [2. Basic write](#2-basic-write)
-      - [2. Make it Upgradable!](#2-make-it-upgradable)
-      - [3. Opaque Transactions](#3-opaque-transactions)
-      - [4. Opaque Decoding](#4-opaque-decoding)
-      - [5. Timestamp](#5-timestamp)
-      - [6. Optional: Get Block Author](#6-optional-get-block-author)
-    - [Graded](#graded)
-      - [Primary Task: The Runtime](#primary-task-the-runtime)
-      - [Option 1: UTXO-based Cryptocurrency](#option-1-utxo-based-cryptocurrency)
-      - [Option 2: Account-based Cryptocurrency](#option-2-account-based-cryptocurrency)
-      - [Secondary Task: User Interface](#secondary-task-user-interface)
-      - [Tertiary Task: Consensus](#tertiary-task-consensus)
-  - [How To Build and Run](#how-to-build-and-run)
-    - [Running](#running)
-    - [Multiple-nodes](#multiple-nodes)
+	- [Instructions](#instructions)
+		- [Ungraded](#ungraded)
+			- [1: Get Those Roots In Order!](#1-get-those-roots-in-order)
+			- [2. Basic write](#2-basic-write)
+			- [2. Make it Upgradable!](#2-make-it-upgradable)
+			- [3. Opaque Transactions](#3-opaque-transactions)
+			- [4. Opaque Decoding](#4-opaque-decoding)
+			- [5. Timestamp](#5-timestamp)
+			- [6. Optional: Get Block Author](#6-optional-get-block-author)
+		- [Graded](#graded)
+			- [Primary Task: The Runtime](#primary-task-the-runtime)
+			- [Option 1: UTXO-based Cryptocurrency](#option-1-utxo-based-cryptocurrency)
+			- [Option 2: Account-based Cryptocurrency](#option-2-account-based-cryptocurrency)
+			- [Secondary Task: User Interface](#secondary-task-user-interface)
+			- [Tertiary Task: Consensus](#tertiary-task-consensus)
+	- [How To Build and Run](#how-to-build-and-run)
+		- [Running](#running)
+		- [Multiple-nodes](#multiple-nodes)
+	- [RPC Cheatsheet](#rpc-cheatsheet)
 
 
 
@@ -116,7 +117,10 @@ Replay the above scenario. Will it work?
 #### 4. Opaque Decoding
 
 Well, still no. The reason for that is that now your client will think of an extrinsic as `Vec<u8>`,
-and the Runtime thinks of it as `BasicExtrinsic`. How are you going to link the two? Which bytes
+and the Runtime thinks of it as `BasicExtrinsic`. How are you going to link the two?
+
+> Basically, ask yourself: how can you encode the `BasicExtrinsic`, such that it is decode-able as
+> both `BasicExtrinsic`` and `Vec<u8>`?
 
 In other words, imagine you pass in some bytes to your `curl/wscat` command. The same bytes should
 be decode-able as both a `Vec<u8>` and `BasicExtrinsic`.
@@ -129,7 +133,8 @@ why and how the `Encode/Decode` implementation for this type is different.
 
 #### 5. Timestamp
 
-Next, write an inherent for your runtime that puts the timestamp into the block. For this, you need a new call type like
+Next, write an inherent for your runtime that puts the timestamp into the block. For this, you need
+a new call type like
 
 ```rust
 pub enum Call {
@@ -176,7 +181,11 @@ Choose one of these two options to complete. You do not need to do both.
 - Runtime logic is similar to Bitcoin, Litecoin, Monero (not the privacy part)
 - Users are able to spend and receive UTXOs
 - Block reward is paid as a new UTXO
-- Fees are implied by the difference between the consumed and produced UTXOs
+- Fees are implied by the difference between the consumed and produced UTXOs.
+
+Your final runtime MUST follow the following specification:
+
+
 
 #### Option 2: Account-based Cryptocurrency
 
@@ -186,6 +195,38 @@ Choose one of these two options to complete. You do not need to do both.
 - Users are able to send and receive tokens
 - Block reward is paid to the author's account
 - Fees are specified explicitly by the user
+
+Your final runtime MUST expose the following functions in its runtime-api:
+
+```rust
+sp_core::crypto::sr
+
+/// Your transaction should something that, when decoded, is compatible with the following:
+struct Transaction {
+	/// The payload that this signature signs must be
+	signature: Signature,
+	/// The call
+	call: Call,
+}
+
+/// Similarly, your `Call` enum must be compatible with this:
+```rust
+enum Call {
+	Transfer()
+}
+
+
+
+trait Api {
+	fn balance_of(who: [u8; 32]) -> Option<u128>;
+	#[cfg(feature = "std")]
+	fn test_only_transfer(from: [u8; 32], to: [u8; 32], amount: u128);
+}
+
+
+```
+
+
 
 #### Secondary Task: User Interface
 
@@ -262,3 +303,21 @@ $ ./target/release/node-template --dev
 # runs a chain with --chain=dev --bob --tmp
 $ ./target/release/node-template --dev --bob
 ```
+
+## RPC Cheatsheet
+
+Consult the `JSON-RPC` lecture (including the speaker notes!), or:
+
+```
+# read a storage key/
+wscat -c 127.0.0.1:9944 -x '{"jsonrpc":"2.0", "id":1, "method":"state_getStorage", "params": ["0x123"]}'
+
+# submit an extrinsic
+wscat -c 127.0.0.1:9944 -x '{"jsonrpc":"2.0", "id":1, "method":"author_submitExtrinsic", "params": ["0x123"]}'
+
+# You can easily achieve the same with `curl` as well:
+
+curl http://34.79.74.54:9934 -H "Content-Type:application/json;charset=utf-8" -d   '{"jsonrpc":"2.0","id":1,"method":"system_chain"}'
+```
+
+The easiest way to get the encoded keys is to write a unit test in your runtime that encodes a key/extrinsic.
